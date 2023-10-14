@@ -1,0 +1,80 @@
+{% extends 'main.html' %}
+
+
+{% block content %}
+<main class="singleProject my-md">
+    <div class="container">
+      <div class="layout">
+        <div class="column column--1of3">
+          <h3 class="singleProject__subtitle">Tools & Stacks</h3>
+          <div class="singleProject__toolStack">
+            {% for tag in proj_data.tags %}
+            <span class="tag tag--pill tag--sub tag--lg">
+              <small>{{ tag }}</small>
+            </span>
+            {% endfor %}
+          </div>
+          {% if proj_data.source_link %}
+          <a class="singleProject__liveLink" href="{{ proj_data.source_link }}" target="_blank"><i class="im im-external-link"></i>Source Code
+          </a>
+          {% endif %}
+          {% if proj_data.demo_link %}
+          <a class="singleProject__liveLink" href="{{ proj_data.demo_link }}" target="_blank"><i class="im im-external-link"></i> Live Demo
+          </a>
+          {% endif %}
+        </div>
+        <div class="column column--2of3">
+          <img class="singleProject__preview" src="{{ proj_data.featured_image.url }}" alt="{{ proj_data.title }} thumbnail" />
+          <a href="{% url 'indivProfile' proj_data.owner_id %}" class="singleProject__developer">{{ proj_data.owner }}</a>
+          <h2 class="singleProject__title">{{ proj_data.title }}</h2>
+          <h3 class="singleProject__subtitle">About</h3>
+          <div class="singleProject__info">
+            {{ proj_data.description }}
+          </div>
+
+          <div class="comments">
+            <h3 class="singleProject__subtitle">Feedback</h3>
+            <h5 class="project--rating">
+              {{ proj_data.vote_ratio }}% Positive Feedback ({{ proj_data.vote_total }} Votes{{ vote_total|pluralize:"s" }})
+            </h5>
+
+            <form class="form" method="POST">
+              {% csrf_token %}
+              <!-- Textarea -->
+              {% for field in review_form %}
+              <div class="form__field">
+                <label for="formInput#textarea">{{ field.label }}</label>
+                {{ field }}
+              </div>
+              {% endfor %}
+
+              {% for error in field.errors %}
+              <p style="color: red;">{{ error }}</p>
+              {% endfor %}
+
+              <input class="btn btn--sub btn--lg" type="submit" value="Add Review" />
+            </form>
+            <div class="commentList">
+              {% for review in review_data %}
+              <div class="comment">
+                <a href="{% url 'indivProfile' review.id %}">
+                  <img class="avatar avatar--md"
+                    src="{{ review.image.url }}" alt="user" />
+                </a>
+                <div class="comment__details">
+                  <a href="{% url 'indivProfile' review.id %}" class="comment__author">{{ review.name }}</a>
+                  <p class="comment__info">
+                      {{ review.body }}
+                  </p>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </main>
+
+{% endblock content %}

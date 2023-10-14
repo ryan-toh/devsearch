@@ -1,0 +1,44 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<main class="formPage my-xl">
+    <div class="content-box">
+        <div class="formWrapper">
+          <div class="auth__header text-center">
+            <h3>New Skill</h3>
+          </div>
+  
+            <a class="backButton" href="{% url 'account' %}"><i class="im im-angle-left"></i><</a>
+            <br>
+  
+            <form method="POST" action="{% url 'add-skill' %}">
+                <!-- Input:Text -->
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="form__field">
+                    <label for="formInput#text">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+                {% endfor %}
+  
+                {% for error in field.errors %}
+                <p style="color: red;">{{ error }}</p>
+                {% endfor %}
+
+                {% if state == "add" %}
+                <input class="btn btn--sub btn--lg  my-md" type="submit" value="Create" />
+                {% elif state == "update" %}
+                <input class="btn btn--sub btn--lg  my-md" type="submit" value="Update" />
+                {% else %}
+                <p>Error: Go back to the previous page and try again.</p>
+                {% endif %}
+                
+            </form>
+        </div>
+    </div>
+  </main>
+  
+
+</form>
+
+{% endblock %}
