@@ -4,17 +4,36 @@
   <!-- Main Section -->
   <main class="inbox my-xl">
     <div class="content-box">
-      <h3 class="inbox__title">New Messages(<span>2</span>)</h3>
+      <h3 class="inbox__title">Inbox(<span>{{unread}}</span>)</h3>
       <ul class="messages">
+        {% if message %}
         {% for message in inbox %}
-        <li class="message message--unread">
+        <li class="message 
+
+        {% if not message.is_read %}
+        message--unread
+        {% endif %}
+
+        ">
+
           <a href="{% url 'indivMessage' message.id %}">
-            <span class="message__author">{{ message.sender }}</span>
+            <span class="message__author">
+              {% if message.sender %}
+              {{ message.sender }}
+              {% else %}
+              {{ message.name }}
+              {% endif %}
+            </span>
             <span class="message__subject">{{ message.subject }}</span>
             <span class="message__date">{{ message.created }}</span>
           </a>
         </li>
         {% endfor %}
+        {% else %}
+        <br>
+        <p>You have no messages yet.</p>
+        <br>
+        {% endif %}
       </ul>
     </div>
   </main>

@@ -7,10 +7,30 @@
       <div class="message">
         <a class="backButton" href="{% url 'inbox' %}"><</a>
         <h2 class="message__subject">{{ message.subject }}</h4>
-          <a href="profile.html" class="message__author">{{ message.sender }}</a>
+          <a href="
+          {% if message.sender.id %}
+          {% url 'indivProfile' message.sender.id %}
+          {% endif %}
+          " 
+          class="message__author">
+          {% if message.sender.id %}
+          {{ message.sender }}
+          {% else %}
+          {{ message.name }}
+          <br>
+          {{ message.email }}
+          {% endif %}
+          </a>
           <p class="message__date">{{ message.created }}</p>
           <div class="message__body">
             {{ message.body }}
+          </div>
+          <br>
+          <div>
+            {% if message.sender %}
+            <a href="{% url 'replyMessage' message.sender.id %}" class="btn btn--sub btn--lg">Reply</a>
+            {% endif %}
+            <a href="{% url 'deleteMessage' message.id %}" class="btn btn--sub btn--lg">Delete</a>
           </div>
       </div>
     </div>

@@ -67,7 +67,13 @@ class MessageForm(ModelForm):
         fields = ['name', 'email', 'subject', 'body']
 
     def __init__(self, *args, **kwargs):
+        is_authenticated = kwargs.pop('is_authenticated')
         super(MessageForm, self).__init__(*args, **kwargs)
+
+        if is_authenticated:
+            del self.fields['name']
+            del self.fields['email']
+
         for name, fields in self.fields.items():
             fields.widget.attrs.update({'class': 'input'})
 

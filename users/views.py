@@ -56,11 +56,13 @@ def loginUser(request):
     context = {"page": page}
     return render(request, "users/login_onboarding.html", context)
 
+
 def logoutUser(request):
     # deletes the current session
     logout(request)
     messages.info(request, "You have now logged out.")
     return redirect('login')
+
 
 def onboardingUser(request):
     # if form submitted via POST
@@ -77,7 +79,7 @@ def onboardingUser(request):
             user.save()
             login(request, user)
             messages.info(request, "Account successfully created!")
-            return redirect('profile')
+            return redirect("profile")
         else:
             messages.error(request, "Check that your inputs are valid. Please try again.")
 
@@ -108,13 +110,19 @@ def profiles(request):
 
     return render(request, "users/profiles.html", {"profile_list": profile_list, "search_query" : q, "custom_range": custom_range})
 
+
 # INDIVIDUAL PROFILE PAGE
 def indivProfile(request, pk):
+    # show the user's account instead if they click on their own profile
+    if request.user.is_authenticated: 
+        if str(request.user.profile.id) == pk: 
+            return redirect("account")
     profile_data = Profile.objects.get(id=pk)
     # exclude skills in the queryset if there is a blank "" expression
     featuredSkills = profile_data.skill_set.exclude(description__exact="")
     otherSkills = profile_data.skill_set.filter(description="")
     return render(request, "users/user_profile.html", {"profile_data": profile_data, "featuredSkills": featuredSkills, "otherSkills": otherSkills})
+
 
 # PERSONAL PROFILE PAGE
 @login_required(login_url="login")
@@ -168,6 +176,7 @@ def editSkill(request, pk):
     context = {"form": form, "state": "update"}
     return render(request, 'users/skill_form.html', context)
 
+
 # ADD SKILL FOR A PROFILE
 @login_required(login_url=login)
 def addSkill(request):
@@ -187,6 +196,7 @@ def addSkill(request):
     context = {"form": form, "state": "add"}
 
     return render(request, 'users/skill_form.html', context)
+
 
 # REMOVE SKILL FOR A PROFILE
 @login_required(login_url=login)
@@ -217,7 +227,8 @@ def messageInbox(request):
     inbox = Message.objects.filter(recipient=profile)
 
     context = {
-        "inbox": inbox
+        "inbox": inbox,
+        "unread": sum(not message.is_read for message in inbox)
     }
     return render(request, 'users/inbox.html', context)
         
@@ -225,9 +236,61 @@ def messageInbox(request):
 def indivMessage(request, pk):
     # get the message details from the id of the message
     message = Message.objects.get(id=pk)
+    message.is_read = True
+    message.save()
 
     context = {"message": message}
     return render(request, 'users/message.html', context)
+
+
+def createMessage(request, pk):
+    if request.method == "POST":
+        form = MessageForm(request.POST, is_authenticated=False)
+        if form.is_valid():
+            message = form.save(commit=False)
+            message.recipient = Profile.objects.get(id=pk)
+            if request.user.is_authenticated:
+                message.sender = Profile.objects.get(id=request.user.profile.id)
+                message.name = Profile.objects.get(id=request.user.profile.id).name
+                message.email = Profile.objects.get(id=request.user.profile.id).email
+            message.save()
+            messages.success(request, "Your message was successfully sent.")
+            return redirect("indivProfile", pk)
+
+    messageForm = MessageForm(is_authenticated=request.user.is_authenticated)
+
+    context = {"form": messageForm, "recipient": pk, "message_type": "new"}
+    return render(request, 'users/message_form.html', context)
+
+
+# template for this is the same as createMessage, only some parameters are changed to support navigation back into the user's inbox
+@login_required(login_url=login)
+def replyMessage(request, pk):
+    messageForm = MessageForm(is_authenticated=True)
+
+    context = {"form": messageForm, "recipient": pk, "message_type": "reply"}
+    return render(request, 'users/message_form.html', context)
+
+
+@login_required(login_url=login)
+def deleteMessage(request, pk):
+    profile = request.user.profile
+    # if a form was submitted
+    if request.method == "POST":
+        message = Message.objects.get(id=pk)
+        message.delete()
+        messages.success(request, "Message deleted.")
+        return redirect("inbox")
+
+    # this code does not currently work, the except does not 
+    # catch when the skill is not found
+    try:
+        message = Message.objects.get(id=pk)
+        context = {"object": message}
+    except ValueError:
+        context = {"object": ""}
+
+    return render(request, 'users/remove_skill.html', context)
 
 
 

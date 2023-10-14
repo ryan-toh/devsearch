@@ -20,5 +20,8 @@ urlpatterns = [
 
     path("inbox/", views.messageInbox, name="inbox"),
     path("inbox/<str:pk>", views.indivMessage, name="indivMessage"),
+    path("create-message/<str:pk>", views.createMessage, name="createMessage"),
+    path("reply-message/<str:pk>", views.replyMessage, name="replyMessage"),
+    path("delete-message/<str:pk>", views.deleteMessage, name="deleteMessage"),
 ]
 

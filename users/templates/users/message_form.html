@@ -5,31 +5,51 @@
     <div class="content-box">
         <div class="formWrapper">
           <div class="auth__header text-center">
-            <h3>New Message</h3>
+            <h3>
+              {% if message_type == 'new' %}
+              New
+              {% elif message_type == 'reply' %}
+              Reply
+              {% endif %}
+              Message
+            </h3>
           </div>
-  
-            <a class="backButton" href="{% url 'profile' %}"><i class="im im-angle-left"></i><</a>
+            {% if message_type == 'new' %}
+            <a class="backButton" href="{% url 'indivProfile' recipient %}"><i class="im im-angle-left"></i><</a>
+            {% endif %}
             <br>
   
-            <form method="POST" action="{% url 'add-skill' %}">
+            <form method="POST" action="
+            {% if message_type == 'new' %}
+            {% url 'createMessage' recipient %}
+            {% elif message_type == 'reply' %}
+            {% url 'replyMessage' recipient %}
+            {% endif %}
+            ">
                 <!-- Input:Text -->
                 {% csrf_token %}
                 {% for field in form %}
                 <div class="form__field">
-                    {% if request.user.is_authenticated %}
                     <label for="formInput#text">{{ field.label }}</label>
                     {{ field }}
-                    {% endif %}
                 </div>
                 {% endfor %}
+
+                {% if request.user.is_authenticated %}
+                <p>Your name and email are automatically sent based on your profile information.</p>
+                <p>Change your profile details <a href="{% url 'edit-account' %}">here</a>.</p>
+                {% endif %}
   
                 {% for error in field.errors %}
                 <p style="color: red;">{{ error }}</p>
                 {% endfor %}
                 
-                
-                <input class="btn btn--sub btn--lg  my-md" type="submit" value="Send" />
-                
+                <div>
+                  <input class="btn btn--sub btn--lg  my-md" type="submit" value="Send" />
+                  {% if message_type == 'reply' %}
+                  <a class="btn btn--lg" href="{% url 'inbox' %}"><i class="im im-angle-left"></i>Cancel</a>
+                  {% endif %}
+                </div>
             </form>
         </div>
     </div>
