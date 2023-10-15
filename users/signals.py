@@ -9,6 +9,10 @@ from django.db.models.signals import post_save, post_delete, pre_delete
 # the connect function to connect "post_save" or other signal to your function
 from django.dispatch import receiver
 
+# to send emails to the user (make sure you have configured parameters to use email)
+from django.core.mail import send_mail
+from django.conf import settings
+
 # ** When using signals in a seperate file like this,
 # tell django in apps.py
 
@@ -53,6 +57,18 @@ def createProfile(sender, instance, created, **kwargs):
             name=user.first_name
             # the above attributes can be obtained
             # by looking at the Django docs for User
+        )
+
+        subject = "Welcome to Devsearch"
+        message = "We are glad you are here!"
+
+        send_mail(
+            subject,
+            message,
+            settings.EMAIL_HOST_USER,
+            [profile.email],
+            fail_silently=False,
+
         )
 
 # signal to delete a User if a Profile is erased

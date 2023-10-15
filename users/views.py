@@ -266,6 +266,18 @@ def createMessage(request, pk):
 # template for this is the same as createMessage, only some parameters are changed to support navigation back into the user's inbox
 @login_required(login_url=login)
 def replyMessage(request, pk):
+    if request.method == "POST":
+        form = MessageForm(request.POST, is_authenticated=False)
+        if form.is_valid():
+            message = form.save(commit=False)
+            message.recipient = Profile.objects.get(id=pk)
+            if request.user.is_authenticated:
+                message.sender = Profile.objects.get(id=request.user.profile.id)
+                message.name = Profile.objects.get(id=request.user.profile.id).name
+                message.email = Profile.objects.get(id=request.user.profile.id).email
+            message.save()
+            messages.success(request, "Your message was successfully sent.")
+            return redirect("inbox")
     messageForm = MessageForm(is_authenticated=True)
 
     context = {"form": messageForm, "recipient": pk, "message_type": "reply"}

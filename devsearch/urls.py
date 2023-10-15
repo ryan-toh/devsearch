@@ -23,6 +23,9 @@ from django.conf import settings
 # helps us create a url for our static file
 from django.conf.urls.static import static
 
+# built in views for password management (change/reset password)
+from django.contrib.auth import views as auth_views
+
 # urlpatterns shows how a user navigates a website and route them
 urlpatterns = [
     # a URL path
@@ -30,8 +33,35 @@ urlpatterns = [
     # go into projects/urls to find the urlpatterns from there
     path("", include('projects.urls')),
     path("profile/", include('users.urls')),
+
+    # password reset form
+    # IMPORTANT: KEEP THE PATH NAME AS "RESET_PASSWORD" as django looks out for them
+
+    # view to enter email and confirm that reset email is sent
+    path("reset_password/", auth_views.PasswordResetView.as_view(template_name="reset_password.html"), name="reset_password"),
+    path("password_reset_sent/", auth_views.PasswordResetDoneView.as_view(template_name="reset_password_sent.html"), name="password_reset_done"),
+
+    # view for the reset link sent via email
+    path("reset/<uidb64>/<token>", auth_views.PasswordResetConfirmView.as_view(template_name="reset.html"), name="password_reset_confirm"),
+
+    # confirms password was reset
+    path("password_reset_complete", auth_views.PasswordResetCompleteView.as_view(template_name="reset_complete.html"), name="password_reset_complete")
 ]
 
 # create a url for our static files
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# required URLs
+
+"""
+password_change
+password_change_done
+
+password_reset
+password_reset_done
+
+password_reset_confirm
+password_reset_complete
+
+"""
