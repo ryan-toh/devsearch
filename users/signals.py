@@ -71,13 +71,6 @@ def createProfile(sender, instance, created, **kwargs):
 
         )
 
-# signal to delete a User if a Profile is erased
-@receiver(post_delete, sender=Profile)
-def deleteUser(sender, instance, **kwargs):
-    if instance:
-        print(f"The User {instance} was also deleted, along with its profile")
-        user = instance.user
-        user.delete()
 
 # signal to update a User if a Profile is updated
 @receiver(post_save, sender=Profile)
@@ -91,6 +84,17 @@ def updateUser(sender, instance, created, **kwargs):
         user.email = profile.email
         user.save()
         print(f"The User '{instance}' was updated, as its Profile was updated.")
+
+# signal to delete a User if a Profile is erased
+@receiver(post_delete, sender=Profile)
+def deleteUser(sender, instance, **kwargs):
+    try:
+        if instance:
+            print(f"The User {instance} was also deleted, along with its profile")
+            user = instance.user
+            user.delete()
+    except:
+        pass
 
 # error occurs when you delete user
 

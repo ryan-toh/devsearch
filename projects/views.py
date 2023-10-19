@@ -43,41 +43,42 @@ def projects(request):
 def project(request, pk):
     # to process and add a review
     projectObj = Project.objects.get(id=pk)
-    profile = request.user.profile
-    if request.method == "POST":
-        form = ReviewForm(request.POST)
-        if form.is_valid():
-            # verify that the project belongs to the current user
-            current_user = profile.id
-            project_owner = projectObj.owner.id
+    if request.user.is_authenticated:
+        profile = request.user.profile
+        if request.method == "POST":
+            form = ReviewForm(request.POST)
+            if form.is_valid():
+                # verify that the project belongs to the current user
+                current_user = profile.id
+                project_owner = projectObj.owner.id
 
-            if current_user == project_owner:
-                messages.error(request, "Permission Error: Can't review a project owned by you.")
-                return redirect("project", pk)
-            try:
-                # process review and add info
-                review = form.save(commit=False)
-                review.owner = profile
-                review.project = projectObj
+                if current_user == project_owner:
+                    messages.error(request, "Permission Error: Can't review a project owned by you.")
+                    return redirect("project", pk)
+                try:
+                    # process review and add info
+                    review = form.save(commit=False)
+                    review.owner = profile
+                    review.project = projectObj
 
-                # validating and adding votes to project
-                if form.cleaned_data["value"] == "up":
-                    projectObj.vote_positive += 1
-                
-                projectObj.vote_total += 1
-                projectObj.vote_ratio = (projectObj.vote_positive / projectObj.vote_total) * 100
+                    # validating and adding votes to project
+                    if form.cleaned_data["value"] == "up":
+                        projectObj.vote_positive += 1
+                    
+                    projectObj.vote_total += 1
+                    projectObj.vote_ratio = (projectObj.vote_positive / projectObj.vote_total) * 100
 
-                projectObj.save()
+                    projectObj.save()
 
-                print("Total Votes:", projectObj.vote_total, "Positive Votes:", projectObj.vote_positive)
+                    print("Total Votes:", projectObj.vote_total, "Positive Votes:", projectObj.vote_positive)
 
-                review.save()
-                messages.success(request, "Review published.")
-                return redirect("project", pk)
-            except IntegrityError:
-                # IntegrityError raised when the UNIQUE constraint fails
-                # User may only publish one review for one project (see Review in models.py)
-                messages.error(request, "You have already reviewed this project.")
+                    review.save()
+                    messages.success(request, "Review published.")
+                    return redirect("project", pk)
+                except IntegrityError:
+                    # IntegrityError raised when the UNIQUE constraint fails
+                    # User may only publish one review for one project (see Review in models.py)
+                    messages.error(request, "You have already reviewed this project.")
 
 
     try:
@@ -89,7 +90,7 @@ def project(request, pk):
     proj_data = {
         "title": project.title,
         "tags": project.tags.all(),
-        "featured_image": project.featured_image,
+        "featured_image": project.imageURL,
         "description": project.description if project.description else "No project description",
         "demo_link": project.demo_link,
         "source_link": project.source_link,
@@ -120,12 +121,21 @@ def create_project(request):
     profile = request.user.profile
     # if a form was submitted
     if request.method == "POST":
+        # process new tags 
+        new_tags = request.POST.get("newtags").replace(",", " ").split()
+
         form = ProjectForm(request.POST, request.FILES)
         if form.is_valid():
             # creates a new object and adds it to the Project model automatically
             project = form.save(commit=False)
             project.owner = profile
             project.save()
+
+            for tag in new_tags:
+                tag, created = Tag.objects.get_or_create(name=tag)
+                project.tags.add(tag)
+
+            print("tags", project.tags.all())
             messages.success(request, "Project successfully created")
             # redirect accepts the url path name defined in urlpatterns
             return redirect("account")
@@ -151,17 +161,26 @@ def update_project(request, pk):
 
     # if a form was submitted
     if request.method == "POST":
+        # process new tags 
+        new_tags = request.POST.get("newtags").replace(",", " ").split()
+
         form = ProjectForm(request.POST, request.FILES, instance=project)
         if form.is_valid():
             # creates a new object and adds it to the Project model automatically
             form.save()
+
+            for tag in new_tags:
+                tag, created = Tag.objects.get_or_create(name=tag)
+                project.tags.add(tag)
+
+            print("tags", project.tags.all())
             messages.success(request, "Project successfully edited.")
             # redirect accepts the url path name defined in urlpatterns
             return redirect("account")
 
     # allows you to modify this specific projects' data when calling 'instance'
     form = ProjectForm(instance=project)
-    context = {'form': form, 'state': 'update'}
+    context = {'form': form, 'state': 'update', 'project': project}
     return render(request, "projects/project_form.html", context)
 
 

@@ -11,17 +11,14 @@ class ProjectForm(ModelForm):
     class Meta:
         model = Project
         # can create a list or use '__all__'
-        fields = ["title", "description", "featured_image", "demo_link", "source_link", "tags"]
+        fields = ["title", "description", "featured_image", "demo_link", "source_link"]
 
         # Q: what is django doing when you declare field?
             # A: it is taking all the required fields from the project model
             # and turning them into input fields (less those with attribute editable=False
             # and auto_now_add=True) (aka non-editable fields)
 
-        widgets = {
-            # turns the tags field into a custom multicheckbox field
-            'tags': forms.CheckboxSelectMultiple
-        }
+    
     def __init__(self, *args, **kwargs):
         super(ProjectForm, self).__init__(*args, **kwargs)
         # update the class where title is an input

@@ -18,7 +18,7 @@ class Project(models.Model):
 
 class Project(models.Model):
     # connect a project to a given user
-    owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL)
+    owner = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.CASCADE)
     # max length is required for each charfield
     title = models.CharField(max_length=200)
 
@@ -64,6 +64,15 @@ class Project(models.Model):
         # "-created" sorts from newest to oldest
 
         ordering = ["-created"]
+
+    @property
+    def imageURL(self):
+        try:
+            url = self.featured_image.url
+        except:
+            url = "/images/default.jpg"
+        return url
+
 
 
 class Review(models.Model):

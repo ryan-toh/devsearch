@@ -302,7 +302,7 @@ def deleteMessage(request, pk):
     except ValueError:
         context = {"object": ""}
 
-    return render(request, 'users/remove_skill.html', context)
+    return render(request, 'users/remove_message.html', context)
 
 
 

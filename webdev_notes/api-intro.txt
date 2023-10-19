@@ -1,0 +1,32 @@
+API - Application Programming Interface
+
+Main Uses
+1. Mobile Apps
+2. Frontend frameworks
+3. Sharing data with other applications/developers
+
+API vs REST API
+
+REST API's 
+- they follow REST specifications (a convention for building HTTP services)
+
+REST: Representational State Transfer
+A REST API is considered RESTful
+
+REST Conventions: 
+Endpoints - example: "https://website.com/api/projects"
+
+The http method determines operations to be performed (eg GET vs POST)
+
+CRUD Operations & their matching HTTP methods
+Create - POST [create object with data from POST request]
+Read - GET [read object specified by ID in URL]
+Update - PUT [update object with data from POST request]
+Delete - DELETE [delete object specified by ID in URL]
+
+POSTMAN
+- Program to debug and test API'se
+
+JSON WEB TOKENS
+
+
